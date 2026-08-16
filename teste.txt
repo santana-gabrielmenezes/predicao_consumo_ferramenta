@@ -1,0 +1,1 @@
+arquivo de teste para verificar se realmente o .gitginore está restringindo o git add deste diretório
