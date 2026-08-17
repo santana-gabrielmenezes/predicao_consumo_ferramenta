@@ -4,7 +4,7 @@ import glob
 import pandas as pd
 
 # busca arquivos com um prefixo especifico em um diretório especificado, concatena e exporta com um nome predefinido
-def consolidar_arquivos(diretorio, prefixo_busca, nome_arquivo_saida): # cria função para buscar arquivos a serem consolidados
+def consolidar_arquivos(diretorio, prefixo_busca, nome_arquivo_saida, colunas, numero_linhas_finais): # cria função para buscar arquivos a serem consolidados
     padrao = os.path.join(diretorio, f'{prefixo_busca}*.csv') # define o padrão de diretório + nome para os arquivos a serem consolidados
     arquivos = glob.glob(padrao) # cria uma lista com o caminho de todos os arquivos que se enquadrarem na regra da variável `padrao`
 
@@ -18,12 +18,14 @@ def consolidar_arquivos(diretorio, prefixo_busca, nome_arquivo_saida): # cria fu
 
     for arquivo in arquivos: # inicia um loop para concatenação dos arquivos
         df = pd.read_csv(arquivo) # cria um df temporário com os dados do arquivo no caminho definido em `arquivo` nesta iteração
+        df = df[colunas] # elimina todas as colunas desnecessárias
+        df = df.iloc[:-numero_linhas_finais] # elimina as últimas linhas do df (linhas de somatórios originárias do SAP)
         df['arquivo_origem'] = os.path.basename(arquivo) # cria uma coluna e preenche com o caminho do arquivo de origem daquela linha para fins de rastreabilidade
         lista_dfs.append(df) # insere cada df em uma lista de dfs
 
     df_consolidado = pd.concat(lista_dfs, ignore_index=True) # concatena todos os dfs da lista_dfs em um único df
 
-    caminho_saida = os.path.join(diretorio, nome_arquivo_saida) # define o nome e o diretorio onde o arquivo consolidade será salvo
+    caminho_saida = os.path.join(diretorio, nome_arquivo_saida) # define o nome e o diretorio onde o arquivo consolidado será salvo
 
     df_consolidado.to_csv(caminho_saida, index=False) # exporta o arquivo em .csv
 
@@ -39,10 +41,14 @@ if __name__ == '__main__': # cria um condicional que só execulta o script se es
         consolidar_arquivos( # execulta a função de consolidação nos parâmetros abaixo
             diretorio=diretorio_dados, # define o diretório
             prefixo_busca='tb_producao_', # define o prefixo dos arquivos
-            nome_arquivo_saida='tb_producao_consolidado' # define o nome de saída do arquivo
+            nome_arquivo_saida='tb_producao_consolidado', # define o nome de saída do arquivo
+            colunas=['Material', 'Qtd.boa confirm.', 'Dt.lçto.'], # define as colunas a serem mantidas no df
+            numero_linhas_finais=3 # define o número de linhas a ser descartada no fim de cada arquivo original
         )
         consolidar_arquivos( # execulta a função de consolidação nos parâmetros abaixo
             diretorio=diretorio_dados, # define o diretório
             prefixo_busca='tb_consumo_ferramentas_', # define o prefixo dos arquivos
-            nome_arquivo_saida='tb_consumo_ferramentas_consolidado' # define o nome de saída do arquivo
+            nome_arquivo_saida='tb_consumo_ferramentas_consolidado', # define o nome de saída do arquivo
+            colunas=['Material', 'Qtd.  UM registro', 'Data de lançamento'], # define as colunas a serem mantidas no df
+            numero_linhas_finais=7 # define o número de linhas a ser descartada no fim de cada arquivo original
         )
