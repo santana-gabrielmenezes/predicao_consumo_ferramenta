@@ -20,7 +20,6 @@ def consolidar_arquivos(diretorio_entrada, diretorio_saida, prefixo_busca, nome_
         df = pd.read_csv(arquivo, low_memory=False) # cria um df temporário com os dados do arquivo no caminho definido em `arquivo` nesta iteração
         df = df[colunas] # elimina todas as colunas desnecessárias
         df = df.iloc[:-numero_linhas_finais] # elimina as últimas linhas do df (linhas de somatórios originárias do SAP)
-        df['arquivo_origem'] = os.path.basename(arquivo) # cria uma coluna e preenche com o caminho do arquivo de origem daquela linha para fins de rastreabilidade
         lista_dfs.append(df) # insere cada df em uma lista de dfs
 
     df_consolidado = pd.concat(lista_dfs, ignore_index=True) # concatena todos os dfs da lista_dfs em um único df
@@ -39,16 +38,16 @@ if __name__ == '__main__': # cria um condicional que só execulta o script se es
         print(f'Erro: diretório {diretorio_dados} não encontrado.') # exibe uma mensagem de erro caso o diretório não exista
     else:
         consolidar_arquivos( # execulta a função de consolidação nos parâmetros abaixo
-            diretorio_entrada=diretorio_dados, # define o diretório
-            diretorio_saida='',
+            diretorio_entrada=diretorio_dados, # define o diretório com os dados a serem consolidados
+            diretorio_saida='', # define o diretório para o arquivo com os dados já consolidados
             prefixo_busca='tb_producao_', # define o prefixo dos arquivos
             nome_arquivo_saida='tb_producao_consolidado.parquet', # define o nome de saída do arquivo
             colunas=['Material', 'Qtd.boa confirm.', 'Dt.lçto.'], # define as colunas a serem mantidas no df
             numero_linhas_finais=3 # define o número de linhas a ser descartada no fim de cada arquivo original
         )
         consolidar_arquivos( # execulta a função de consolidação nos parâmetros abaixo
-            diretorio_entrada=diretorio_dados, # define o diretório
-            diretorio_saida='',
+            diretorio_entrada=diretorio_dados, # define o diretório com os dados a serem consolidados
+            diretorio_saida='', # define o diretório para o arquivo com os dados já consolidados
             prefixo_busca='tb_consumo_ferramentas_', # define o prefixo dos arquivos
             nome_arquivo_saida='tb_consumo_ferramentas_consolidado.parquet', # define o nome de saída do arquivo
             colunas=['Material', 'Qtd.  UM registro', 'Data de lançamento'], # define as colunas a serem mantidas no df
