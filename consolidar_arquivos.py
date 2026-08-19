@@ -19,7 +19,8 @@ def consolidar_arquivos(diretorio_entrada, diretorio_saida, prefixo_busca, nome_
     for arquivo in arquivos: # inicia um loop para concatenação dos arquivos
         df = pd.read_csv(arquivo, low_memory=False) # cria um df temporário com os dados do arquivo no caminho definido em `arquivo` nesta iteração
         df = df[colunas] # elimina todas as colunas desnecessárias
-        df = df.iloc[:-numero_linhas_finais] # elimina as últimas linhas do df (linhas de somatórios originárias do SAP)
+        df = df.iloc[:-numero_linhas_finais] # elimina as últimas linhas do df (linhas de somatórios originárias da exportação do SAP)
+        df = df.dropna() # elimina as linha vazias (linhas de somatórios originárias da exportação do SAP)
         lista_dfs.append(df) # insere cada df em uma lista de dfs
 
     df_consolidado = pd.concat(lista_dfs, ignore_index=True) # concatena todos os dfs da lista_dfs em um único df
