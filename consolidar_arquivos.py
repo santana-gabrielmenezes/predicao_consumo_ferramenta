@@ -1,4 +1,6 @@
 # importa bibliotecas necessárias para a execução do script
+import io
+import re
 import os
 import glob
 import pandas as pd
@@ -17,7 +19,13 @@ def consolidar_arquivos(diretorio_entrada, diretorio_saida, prefixo_busca, nome_
     print(f'Inciando consolidação de arquivos no padrão {padrao} ({len(arquivos)} arquivos)') # exibe uma mensagem de início da consolidação
 
     for arquivo in arquivos: # inicia um loop para concatenação dos arquivos
-        df = pd.read_csv(arquivo, low_memory=False) # cria um df temporário com os dados do arquivo no caminho definido em `arquivo` nesta iteração
+
+        with open(arquivo, 'r', encoding='utf-8') as file: # inicializa um Context Manager para abrir o arquivo e fechar independente se o código abaixo for realizado com sucesso ou der erro
+            conteudo_texto = file.read() # guarda o conteúdo do arquivo na variável
+        conteudo_corrigido = re.sub(r'""([^,]*)""', r'\1"', conteudo_texto) # varre o arquivo e realliza a substituição de qualquer texto que conincida com a estrutura "aspas-duplas, aspas-duplas, quaisquer caracteres exceto virgula, aspas-duplas e aspas-dulpas" substituindo por "texto seguido por aspas-duplas"
+        arquivo_em_memoria = io.StringIO(conteudo_corrigido) # guarda o conteúdo corrigido em uma variável
+
+        df = pd.read_csv(arquivo_em_memoria, low_memory=False) # cria um df temporário com os dados corrigidos
         df = df[colunas] # elimina todas as colunas desnecessárias
         df = df.iloc[:-numero_linhas_finais] # elimina as últimas linhas do df (linhas de somatórios originárias da exportação do SAP)
         df = df.dropna() # elimina as linha vazias (linhas de somatórios originárias da exportação do SAP)
